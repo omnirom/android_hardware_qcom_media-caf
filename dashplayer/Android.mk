@@ -1,4 +1,4 @@
-#ifneq ($(call is-board-platform,msm8960),true)
+#ifneq ($(TARGET_BOARD_PLATFORM),msm8960
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 # ---------------------------------------------------------------------------------
