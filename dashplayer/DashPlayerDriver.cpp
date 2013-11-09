@@ -96,7 +96,7 @@ status_t DashPlayerDriver::setDataSource(const sp<IStreamSource> &source) {
     return OK;
 }
 
-#ifdef ANDROID_JB_MR2
+#ifdef KITKAT
 status_t DashPlayerDriver::setVideoSurfaceTexture(
         const sp<IGraphicBufferProducer> &bufferProducer) {
     mPlayer->setVideoSurfaceTexture(bufferProducer);

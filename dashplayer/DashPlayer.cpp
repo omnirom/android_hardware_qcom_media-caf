@@ -48,7 +48,7 @@
 #include <media/stagefright/MetaData.h>
 #include <TextDescriptions.h>
 
-#ifdef ANDROID_JB_MR2
+#ifdef KITKAT
 #include <gui/IGraphicBufferProducer.h>
 #else
 #include <gui/ISurfaceTexture.h>
@@ -150,7 +150,7 @@ void DashPlayer::setDataSource(int fd, int64_t offset, int64_t length) {
    ALOGE("DashPlayer::setDataSource not Implemented...");
 }
 
-#ifdef ANDROID_JB_MR2
+#ifdef KITKAT
 void DashPlayer::setVideoSurfaceTexture(const sp<IGraphicBufferProducer> &bufferProducer) {
     sp<AMessage> msg = new AMessage(kWhatSetVideoNativeWindow, id());
     sp<Surface> surface(bufferProducer != NULL ?
