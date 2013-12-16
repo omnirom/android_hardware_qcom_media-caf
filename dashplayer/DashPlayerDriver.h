@@ -37,7 +37,7 @@ struct DashPlayerDriver : public MediaPlayerInterface {
 
     virtual status_t setDataSource(const sp<IStreamSource> &source);
 
-#ifdef KITKAT
+#ifdef ANDROID_JB_MR2
     virtual status_t setVideoSurfaceTexture(
             const sp<IGraphicBufferProducer> &bufferProducer);
 #else

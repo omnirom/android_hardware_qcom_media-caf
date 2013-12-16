@@ -1,4 +1,4 @@
-#ifneq ($(call is-board-platform,msm8960),true)
+#ifneq ($(TARGET_BOARD_PLATFORM),msm8960
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 # ---------------------------------------------------------------------------------
@@ -43,8 +43,9 @@ LOCAL_C_INCLUDES := \
 	$(TOP)/frameworks/av/media/libstagefright/rtsp                \
 	$(TOP)/hardware/qcom/media-caf/mm-core/inc                        \
 
-ifeq ($(PLATFORM_SDK_VERSION), 19)
-  LOCAL_CFLAGS += -DKITKAT
+#ifeq ($(PLATFORM_SDK_VERSION), 18)
+ifeq (1,$(filter 1,$(shell echo "$$(( $(PLATFORM_SDK_VERSION) >= 18 ))" )))
+  LOCAL_CFLAGS += -DANDROID_JB_MR2
 endif
 
 LOCAL_MODULE:= libdashplayer
