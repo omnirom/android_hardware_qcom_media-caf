@@ -789,6 +789,9 @@ private:
     OMX_U32 m_demux_entries;
     OMX_U32 m_disp_hor_size;
     OMX_U32 m_disp_vert_size;
+    OMX_U32 m_smoothstreaming_height;
+    OMX_U32 m_smoothstreaming_width;
+    bool m_use_smoothstreaming;
 
     OMX_S64 prev_ts;
     bool rst_prev_ts;
@@ -898,10 +901,13 @@ private:
         struct vidc_heap m_heap_ptr[MAX_COUNT];
     };
     allocate_color_convert_buf client_buffers;
-    static bool m_secure_display; //For qservice
+    static int m_secure_display; //For qservice
+    static pthread_mutex_t m_secure_display_lock;
     int secureDisplay(int mode);
     int unsecureDisplay(int mode);
     int set_turbo_mode(bool mode);
+    OMX_ERRORTYPE allocate_scratch_buffers(void);
+    void deallocate_scratch_buffers(void);
     bool msg_thread_created;
     bool async_thread_created;
     bool m_turbo_mode;
