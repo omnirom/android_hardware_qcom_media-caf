@@ -48,7 +48,7 @@
 #include <media/stagefright/MetaData.h>
 #include <TextDescriptions.h>
 
-#ifdef KITKAT
+#ifdef ANDROID_JB_MR2
 #include <gui/IGraphicBufferProducer.h>
 #else
 #include <gui/ISurfaceTexture.h>
@@ -150,7 +150,7 @@ void DashPlayer::setDataSource(int fd, int64_t offset, int64_t length) {
    ALOGE("DashPlayer::setDataSource not Implemented...");
 }
 
-#ifdef KITKAT
+#ifdef ANDROID_JB_MR2
 void DashPlayer::setVideoSurfaceTexture(const sp<IGraphicBufferProducer> &bufferProducer) {
     sp<AMessage> msg = new AMessage(kWhatSetVideoNativeWindow, id());
     sp<Surface> surface(bufferProducer != NULL ?
@@ -918,8 +918,16 @@ void DashPlayer::onMessageReceived(const sp<AMessage> &msg) {
                     if (what == kWhatBufferingStart) {
                       ALOGE("Source Notified Buffering Start for %s ",mTrackName);
                       if (mBufferingNotification == false) {
-                         mBufferingNotification = true;
-                         notifyListener(MEDIA_INFO, MEDIA_INFO_BUFFERING_START, 0);
+                          if (track == kVideo && mNativeWindow == NULL)
+                          {
+                               ALOGE("video decoder not instantiated, no buffering for video",
+                                     mBufferingNotification);
+                          }
+                          else
+                          {
+                              mBufferingNotification = true;
+                              notifyListener(MEDIA_INFO, MEDIA_INFO_BUFFERING_START, 0);
+                          }
                       }
                       else {
                          ALOGE("Buffering Start Event Already Notified mBufferingNotification(%d)",
@@ -1303,10 +1311,11 @@ status_t DashPlayer::feedDecoderInputData(int track, const sp<AMessage> &msg) {
                reply->post();
                return OK;
             }
-            else if ( (track == kText) && (err == ERROR_END_OF_STREAM))
-            {
-               sendTextPacket(NULL,ERROR_END_OF_STREAM);
-               return ERROR_END_OF_STREAM;
+            else if ((track == kText) &&
+                     (err == ERROR_END_OF_STREAM || err == (status_t)UNKNOWN_ERROR)) {
+               ALOGE("Text track has encountered error %d", err );
+               sendTextPacket(NULL, err);
+               return err;
             }
         }
 
@@ -1596,7 +1605,8 @@ void DashPlayer::sendTextPacket(sp<ABuffer> accessUnit,status_t err)
 
     //Local setting
     parcel.writeInt32(KEY_LOCAL_SETTING);
-    if (err == ERROR_END_OF_STREAM)
+    if (err == ERROR_END_OF_STREAM ||
+        err == (status_t)UNKNOWN_ERROR)
     {
        parcel.writeInt32(KEY_TEXT_EOS);
        // write size of sample

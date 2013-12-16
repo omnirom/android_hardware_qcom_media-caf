@@ -400,6 +400,7 @@ DashCodec::DashCodec()
 }
 
 DashCodec::~DashCodec() {
+  clearCachedFormats();
 }
 
 void DashCodec::setNotificationMessage(const sp<AMessage> &msg) {
@@ -845,8 +846,8 @@ status_t DashCodec::setComponentRole(
             "video_decoder.mpeg4", "video_encoder.mpeg4" },
         { MEDIA_MIMETYPE_VIDEO_H263,
             "video_decoder.h263", "video_encoder.h263" },
-        { MEDIA_MIMETYPE_VIDEO_VP8,
-            "video_decoder.vp8", "video_encoder.vp8" },
+        { MEDIA_MIMETYPE_VIDEO_VPX,
+            "video_decoder.vpx", "video_encoder.vpx" },
         { MEDIA_MIMETYPE_AUDIO_RAW,
             "audio_decoder.raw", "audio_encoder.raw" },
         { MEDIA_MIMETYPE_AUDIO_FLAC,
@@ -1482,8 +1483,8 @@ static status_t GetVideoCodingTypeFromMime(
         *codingType = OMX_VIDEO_CodingH263;
     } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_MPEG2, mime)) {
         *codingType = OMX_VIDEO_CodingMPEG2;
-    } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_VP8, mime)) {
-        *codingType = OMX_VIDEO_CodingVP8;
+    } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_VPX, mime)) {
+        *codingType = OMX_VIDEO_CodingVPX;
     } else {
         *codingType = OMX_VIDEO_CodingUnused;
         return ERROR_UNSUPPORTED;
@@ -2175,7 +2176,7 @@ void DashCodec::sendFormatChange() {
     if (mFormats.size() > 0) {
         useCachedConfig = true;
         def = mFormats[0];
-        mFormats.pop();
+        mFormats.removeAt(0);
     } else {
         def = new OMX_PARAM_PORTDEFINITIONTYPE();
         InitOMXParams(def);
@@ -2203,7 +2204,7 @@ void DashCodec::sendFormatChange() {
             bool hasValidCrop = true;
             if (useCachedConfig) {
                 rect = mOutputCrops[0];
-                mOutputCrops.pop();
+                mOutputCrops.removeAt(0);
                 if (rect == NULL) {
                     rect = new OMX_CONFIG_RECTTYPE();
                     hasValidCrop = false;

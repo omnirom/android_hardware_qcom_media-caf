@@ -17,7 +17,6 @@ LOCAL_C_INCLUDES := \
     $(TOP)/hardware/qcom/$(DISPLAY)/libcopybit
 
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-
 LOCAL_SHARED_LIBRARIES := liblog libdl
 
 LOCAL_MODULE_TAGS := optional
