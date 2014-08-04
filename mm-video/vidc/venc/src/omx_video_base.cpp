@@ -76,9 +76,11 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VC1_STRUCT_B_POS            24
 #define VC1_SEQ_LAYER_SIZE          36
 
+#ifndef MAX_RES_720P
 #define IS_NOT_ALIGNED( num, to) (num & (to-1))
 #define ALIGN( num, to ) (((num) + (to-1)) & (~(to-1)))
 #define SZ_2K (2048)
+#endif
 
 typedef struct OMXComponentCapabilityFlagsType
 {
@@ -3576,6 +3578,7 @@ OMX_ERRORTYPE  omx_video::empty_this_buffer_proxy(OMX_IN OMX_HANDLETYPE         
     memcpy (pmem_data_buf, (buffer->pBuffer + buffer->nOffset),
             buffer->nFilledLen);
     DEBUG_PRINT_LOW("memcpy() done in ETBProxy for i/p Heap UseBuf");
+#ifndef MAX_RES_720P
   } else if (m_sInPortDef.format.video.eColorFormat ==
       OMX_COLOR_FormatYUV420SemiPlanar) {
       //For the case where YUV420SP buffers are qeueued to component
@@ -3598,6 +3601,7 @@ OMX_ERRORTYPE  omx_video::empty_this_buffer_proxy(OMX_IN OMX_HANDLETYPE         
                     chromaOffset+chromaSize);
           }
       }
+#endif
   }
 #ifdef _COPPER_
   if(dev_empty_buf(buffer, pmem_data_buf,nBufIndex,m_pInput_pmem[nBufIndex].fd) != true)
@@ -4440,6 +4444,7 @@ OMX_ERRORTYPE omx_video::get_supported_profile_level(OMX_VIDEO_PARAM_PROFILELEVE
                     profileLevelType->eProfile,profileLevelType->eLevel);
   return eRet;
 }
+#endif
 
 #ifdef USE_ION
 int omx_video::alloc_map_ion_memory(int size,struct ion_allocation_data *alloc_data,
@@ -4474,9 +4479,12 @@ int omx_video::alloc_map_ion_memory(int size,struct ion_allocation_data *alloc_d
         if (secure_session)
            alloc_data->heap_mask = (ION_HEAP(MEM_HEAP_ID) | ION_SECURE);
         else
+#ifdef MAX_RES_720P
+           alloc_data->heap_mask = ION_HEAP(MEM_HEAP_ID);
+#else
            alloc_data->heap_mask = (ION_HEAP(MEM_HEAP_ID) |
                 ION_HEAP(ION_IOMMU_HEAP_ID));
-
+#endif
         pthread_mutex_lock(&m_venc_ionlock);
         rc = ioctl(ion_device_fd,ION_IOC_ALLOC,alloc_data);
         if(rc || !alloc_data->handle) {
@@ -4533,7 +4541,6 @@ void omx_video::free_ion_memory(struct venc_ion *buf_ion_info)
      buf_ion_info->fd_ion_data.fd = -1;
      pthread_mutex_unlock(&m_venc_ionlock);
 }
-#endif
 #endif
 #ifdef _ANDROID_ICS_
 void omx_video::omx_release_meta_buffer(OMX_BUFFERHEADERTYPE *buffer)
@@ -4638,12 +4645,12 @@ bool omx_video::omx_c2d_conv::convert(int src_fd, void *src_viraddr,
 }
 
 bool omx_video::omx_c2d_conv::open(unsigned int height,unsigned int width,
-     ColorConvertFormat src, ColorConvertFormat dest)
+     ColorConvertFormat src, ColorConvertFormat dest, unsigned int stride)
 {
   bool status = false;
   if(!c2dcc) {
      c2dcc = mConvertOpen(width, height, width, height,
-             src,dest,0);
+             src,dest,0,stride);
      if(c2dcc) {
        src_format = src;
        status = true;
@@ -4725,21 +4732,21 @@ OMX_ERRORTYPE  omx_video::empty_this_buffer_opaque(OMX_IN OMX_HANDLETYPE hComp,
       c2d_conv.close();
       c2d_opened = false;
     }
-    if (!c2d_opened) {
-        if (handle->format == HAL_PIXEL_FORMAT_RGBA_8888) {
-          DEBUG_PRINT_ERROR("\n open Color conv for RGBA888");
-          if(!c2d_conv.open(m_sInPortDef.format.video.nFrameHeight,
-               m_sInPortDef.format.video.nFrameWidth,RGBA8888,NV12_2K)){
-             m_pCallbacks.EmptyBufferDone(hComp,m_app_data,buffer);
-             DEBUG_PRINT_ERROR("\n Color conv open failed");
-             return OMX_ErrorBadParameter;
-          }
-          c2d_opened = true;
-        } else if(handle->format != HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
+    if(!c2d_opened) {
+      if(handle->format == HAL_PIXEL_FORMAT_RGBA_8888) {
+         DEBUG_PRINT_ERROR("\n open Color conv for RGBA888");
+        if(!c2d_conv.open(m_sInPortDef.format.video.nFrameHeight,
+          m_sInPortDef.format.video.nFrameWidth,RGBA8888,NV12_2K,(unsigned int)handle->width)){
+          m_pCallbacks.EmptyBufferDone(hComp,m_app_data,buffer);
+          DEBUG_PRINT_ERROR("\n Color conv open failed");
+          return OMX_ErrorBadParameter;
+        }
+        c2d_opened = true;
+      } else if(handle->format != HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
           DEBUG_PRINT_ERROR("\n Incorrect color format");
           m_pCallbacks.EmptyBufferDone(hComp,m_app_data,buffer);
           return OMX_ErrorBadParameter;
-        }
+      }
     }
   }
 

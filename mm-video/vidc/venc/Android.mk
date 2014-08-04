@@ -32,6 +32,9 @@ libmm-venc-def += -DMAX_RES_1080P
 libmm-venc-def += -DMAX_RES_1080P_EBI
 libmm-venc-def += -DBADGER
 endif
+ifeq ($(TARGET_BOARD_PLATFORM),msm7x30)
+libmm-venc-def += -DMAX_RES_720P
+endif
 ifeq ($(TARGET_USES_ION),true)
 libmm-venc-def += -DUSE_ION
 endif
@@ -55,6 +58,7 @@ libmm-venc-inc      += $(OMX_VIDEO_PATH)/vidc/common/inc
 libmm-venc-inc      += hardware/qcom/media-caf/mm-core/inc
 libmm-venc-inc      += hardware/qcom/media-caf/libstagefrighthw
 libmm-venc-inc      += hardware/qcom/$(DISPLAY)/libgralloc
+libmm-venc-inc      += hardware/libhardware/include/hardware/
 libmm-venc-inc      += frameworks/native/include/media/hardware
 libmm-venc-inc      += frameworks/native/include/media/openmax
 libmm-venc-inc      += hardware/qcom/media-caf/libc2dcolorconvert
@@ -71,7 +75,7 @@ LOCAL_C_INCLUDES                := $(libmm-venc-inc)
 LOCAL_ADDITIONAL_DEPENDENCIES   := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 LOCAL_PRELINK_MODULE      := false
 LOCAL_SHARED_LIBRARIES    := liblog libutils libbinder libcutils \
-                             libc2dcolorconvert libdl
+                             libc2dcolorconvert libdl  libhardware
 
 LOCAL_SRC_FILES   := src/omx_video_base.cpp
 LOCAL_SRC_FILES   += src/omx_video_encoder.cpp
