@@ -76,9 +76,9 @@ libmm-vdec-inc          += frameworks/native/include/media/openmax
 libmm-vdec-inc          += frameworks/native/include/media/hardware
 libmm-vdec-inc          += hardware/qcom/media-caf/libc2dcolorconvert
 libmm-vdec-inc          += hardware/qcom/$(DISPLAY)/libcopybit
-libmm-vdec-inc          += frameworks/av/include/media/stagefright
+libmm-vdec-inc          += frameworks/av-caf/include/media/stagefright
 libmm-vdec-inc          += hardware/qcom/$(DISPLAY)/libqservice
-libmm-vdec-inc          += frameworks/av/media/libmediaplayerservice
+libmm-vdec-inc          += frameworks/av-caf/media/libmediaplayerservice
 libmm-vdec-inc          += frameworks/native/include/binder
 ifeq ($(DISPLAY),display-caf)
 libmm-vdec-inc          += hardware/qcom/$(DISPLAY)/libqdutils
